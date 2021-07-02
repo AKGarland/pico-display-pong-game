@@ -50,8 +50,6 @@ def play():
         draw_ball((ball_position_x, ball_position_y))
         display.update()
         
-        ball_falling = ball_x_direction > 0
-        ball_moving_left = ball_y_direction > 0
         wall_collision = ball_position_y > 125 or ball_position_y < 7
         top_collision = ball_position_x < 15
         player_collision = ball_position_x > 195 and (ball_position_y + ball_radius > player_position) and (ball_position_y - ball_radius) < (player_position + player_length)
