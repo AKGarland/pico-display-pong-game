@@ -46,21 +46,21 @@ class Ball:
         return self.position_y > (height - self.radius - 5)
     
     def has_hit_player_one(self, player):
-        return self.position_x > 195 and (self.position_y + self.radius > player.position) and (self.position_y - self.radius) < (player.position + player.length)
+        return self.position_x > player.collision_sensor_x and (self.position_y + self.radius > player.position) and (self.position_y - self.radius) < (player.position + player.length)
         
     def has_hit_player_two(self, player):
-        return self.position_x < 35 and (self.position_y + self.radius > player.position) and (self.position_y - self.radius) < (player.position + player.length)
+        return self.position_x < player.collision_sensor_x and (self.position_y + self.radius > player.position) and (self.position_y - self.radius) < (player.position + player.length)
     
-    def randomise_direction(self):
+    def randomise_direction(self,player_one):
         rebound_chance = random.randint(0,6)
         if self.has_hit_right_wall() or self.has_hit_left_wall():
             self._kx = self._kx*-1 if rebound_chance == 2 else self._kx
             self._ky = -1 if self.has_hit_left_wall() else 1
-            print('hit wall ky:{}'.format(self._ky))
+            
         else:
             self._ky = self._ky*-1 if rebound_chance == 2 else self._ky
-            self._kx = self._kx*-1 # hopefully these work
-             
+            self._kx = -1 if self.has_hit_player_one(player_one) else 1
+     
         self.x_direction = self._kx*random.randint(self._x_low_limit,self._x_up_limit)
         self.y_direction = self._ky*random.randint(self._y_low_limit,self._y_up_limit)
             
@@ -69,7 +69,6 @@ class Ball:
         right_clip = self.has_hit_right_wall() and self.y_direction < self.radius
         if left_clip or right_clip:
             self.y_direction = self._ky*self.radius
-            print('nudge {}'.format(self.y_direction))
         
     def move(self):
         self.position_x += self.x_direction
@@ -89,13 +88,14 @@ class Player:
         self.speed = 5
         self.length = 30
         self.score = 0
+        self.collision_sensor_x = self._vertical_position - 7 if player_number == 1 else self._vertical_position + self._height + 7
         
     def draw(self):
         display.set_pen(player_colour)
         display.rectangle(self._vertical_position,self.position,self._height,self.length)
         
     def move_true_left(self):
-        if self.position < 105:
+        if self.position < (width - self.length):
             self.position += self.speed
     
     def move_true_right(self):
@@ -159,7 +159,7 @@ def play():
                 sleep(0.05)
                 display.set_led(0,0,255)
 
-            ball.randomise_direction()
+            ball.randomise_direction(player_one) # :/
             ball.nudge_out_of_clip()
     
         if display.is_pressed(display.BUTTON_Y):
@@ -172,3 +172,4 @@ def play():
             player_two.move_true_right()
         
         ball.move()
+    
